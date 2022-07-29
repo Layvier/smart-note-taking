@@ -1,0 +1,17 @@
+input AutocompletePayload {
+  title: String
+  sources: [String!]
+  inputText: String!
+}
+
+input QuestionGenerationPayload {
+  title: String
+  sources: [String!]
+  noteContent: String!
+}
+
+type Query {
+  hello(subject: String): String
+  autocomplete(payload: AutocompletePayload!): String!
+  generateQuestions(payload: QuestionGenerationPayload!): [String!]!
+}
