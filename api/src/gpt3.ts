@@ -1,10 +1,23 @@
-import { Configuration, OpenAIApi } from "openai";
+import { Configuration, OpenAIApi } from 'openai';
+import { env } from './env';
 
 const configuration = new Configuration({
-  apiKey: "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",
+  apiKey: env.OTHER.OPENAI_API_KEY,
 });
-console.log(process.env.OPENAI_API_KEY);
 const openai = new OpenAIApi(configuration);
+
+function wordFreq(s: string) {
+  return s
+    .replace(/[.]/g, '')
+    .split(/\s/)
+    .reduce(
+      (map, word) =>
+        Object.assign(map, {
+          [word]: map[word] ? map[word] + 1 : 1,
+        }),
+      {}
+    );
+}
 
 export const autocompleteText = async ({
   title,
@@ -15,30 +28,45 @@ export const autocompleteText = async ({
   sources: string[];
   inputText: string;
 }): Promise<string> => {
-  const sourcesPrompt = sources.map(
-    (source) => `Source 1:
-  ${source}
-  `
-  ).join(`
-  
-  ========
+  // const inputWords = inputText.replace(/[.]/g, '').split(/\s/);
+  // console.log(inputWords);
+  // // console.log({ sources });
+  // const frequencies = sources.map(source => {
+  //   const s = source.replace(/[.]/g, '').split(/\s/);
+  //   console.log(s);
+  //   return s.reduce(
+  //     (map, word) =>
+  //       inputWords.includes(word)
+  //         ? Object.assign(map, {
+  //             [word]: map[word] ? map[word] + 1 : 1,
+  //           })
+  //         : map,
+  //     {}
+  //   );
+  // });
 
-  `);
+  // const sourcesPrompt = sources.map(
+  //   source => `Source 1:
+  // ${source}
+  // `
+  // ).join(`
+
+  // ========
+
+  // `);
   const prompt = `
-  ${sourcesPrompt}
-  
-  Below is a study note${title ? " about " + title : ""}
-  =======
+  Below is a study note${title ? ' about ' + title : ''}
 
   ${inputText}`;
   console.log(prompt);
   const response = await openai.createCompletion({
-    model: "text-davinci-002",
+    model: 'text-davinci-002',
+    // model: 'text-curie-001',
     prompt,
     temperature: 0,
     max_tokens: 20,
   });
-  if (!response.data.choices[0].text) throw new Error("no results from gpt3");
-  console.log(response.data.choices);
+  if (!response.data?.choices) return '';
+  if (!response.data?.choices[0].text) throw new Error('no results from gpt3');
   return response.data.choices[0].text;
 };

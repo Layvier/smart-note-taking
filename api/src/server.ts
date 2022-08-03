@@ -1,87 +1,58 @@
-import { ApolloServer } from "apollo-server-express";
-import * as GraphiQL from "apollo-server-module-graphiql";
-import * as cors from "cors";
-import * as express from "express";
+import { ApolloServer } from 'apollo-server-koa';
+import * as Koa from 'koa';
 
-import schema from "./schema";
+import schema from './graphql/schema';
+// import { validateAndDecodeJWT, JWTPayload } from '../services/auth/jwt';
+import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
+import { env } from './env';
 
-import { execute, subscribe } from "graphql";
-import { createServer, Server } from "http";
-import { SubscriptionServer } from "subscriptions-transport-ws";
-import * as url from "url";
-
-type ExpressGraphQLOptionsFunction = (
-  req?: express.Request,
-  res?: express.Response
-) => any | Promise<any>;
-
-function graphiqlExpress(
-  options: GraphiQL.GraphiQLData | ExpressGraphQLOptionsFunction
-) {
-  const graphiqlHandler = (
-    req: express.Request,
-    res: express.Response,
-    next: any
-  ) => {
-    const query = req.url && url.parse(req.url, true).query;
-    GraphiQL.resolveGraphiQLString(query, options, req).then(
-      (graphiqlString: any) => {
-        res.setHeader("Content-Type", "text/html");
-        res.write(graphiqlString);
-        res.end();
+const server = new ApolloServer({
+  schema,
+  introspection: true,
+  // mocks: env.API.GRAPHQL_MOCK_ENABLED === 'true' && {
+  //   Date: () => new Date(),
+  // },
+  // formatError: (err) => {
+  //   logger.error(err);
+  //   !!err.extensions.exception?.stacktrace && err.extensions.exception.stacktrace.map((s) => logger.error(s));
+  //   return err;
+  // },
+  mockEntireSchema: true,
+  // context: async (context): Promise<APIContext> => {
+  //   const jwt = context.ctx.request.header.authorization;
+  //   if (!!jwt) {
+  //     try {
+  //       return { user: await validateAndDecodeJWT(jwt) };
+  //     } catch (err) {
+  //       throw new AuthenticationError('Invalid token');
+  //     }
+  //   }
+  //   return {};
+  // },
+  plugins: [
+    ApolloServerPluginLandingPageGraphQLPlayground(),
+    {
+      requestDidStart: async (c) => {
+        const requestStartedAt = Date.now();
+        return {
+          async willSendResponse(a) {
+            console.log(`Operation ${a.operationName} took ${Date.now() - requestStartedAt}ms`);
+          },
+        };
       },
-      (error: any) => next(error)
-    );
-  };
+    },
+  ],
+});
 
-  return graphiqlHandler;
+const app = new Koa();
+const port = Number(env.OTHER.PORT) || 4202;
+
+async function startServer() {
+  await server.start();
+  server.applyMiddleware({ app });
+
+  app.listen(port);
+  console.log(`Server running on http://localhost:${port}`);
 }
 
-export default async (port: number): Promise<Server> => {
-  const app = express();
-
-  const server: Server = createServer(app);
-
-  app.use("*", cors({ origin: "http://localhost:4201" }));
-
-  const apolloServer = new ApolloServer({
-    playground: false,
-    schema,
-  });
-
-  apolloServer.applyMiddleware({ app, path: "/graphql" });
-
-  if (module.hot) {
-    app.use(
-      "/graphiql",
-      graphiqlExpress({
-        endpointURL: "/graphql",
-        query:
-          "# Welcome to your own GraphQL server!\n#\n" +
-          "# Press Play button above to execute GraphQL query\n#\n" +
-          "# You can start editing source code and see results immediately\n\n" +
-          "query hello($subject:String) {\n  hello(subject: $subject)\n}",
-        subscriptionsEndpoint: `ws://localhost:${port}/subscriptions`,
-        variables: { subject: "World" },
-      })
-    );
-  }
-
-  return new Promise<Server>((resolve) => {
-    server.listen(port, () => {
-      // tslint:disable-next-line
-      new SubscriptionServer(
-        {
-          execute,
-          schema,
-          subscribe,
-        },
-        {
-          path: "/subscriptions",
-          server,
-        }
-      );
-      resolve(server);
-    });
-  });
-};
+export { startServer };
