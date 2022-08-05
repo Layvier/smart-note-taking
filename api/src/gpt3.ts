@@ -54,19 +54,20 @@ export const autocompleteText = async ({
   // ========
 
   // `);
-  const prompt = `
-  Below is a study note${title ? ' about ' + title : ''}
+  return ' autocomplete';
+  // const prompt = `
+  // Below is a study note${title ? ' about ' + title : ''}
 
-  ${inputText}`;
-  console.log(prompt);
-  const response = await openai.createCompletion({
-    model: 'text-davinci-002',
-    // model: 'text-curie-001',
-    prompt,
-    temperature: 0,
-    max_tokens: 20,
-  });
-  if (!response.data?.choices) return '';
-  if (!response.data?.choices[0].text) throw new Error('no results from gpt3');
-  return response.data.choices[0].text;
+  // ${inputText}`;
+  // console.log(prompt);
+  // const response = await openai.createCompletion({
+  //   model: 'text-davinci-002',
+  //   // model: 'text-curie-001',
+  //   prompt,
+  //   temperature: 0,
+  //   max_tokens: 20,
+  // });
+  // if (!response.data?.choices) return '';
+  // if (!response.data?.choices[0].text) throw new Error('no results from gpt3');
+  // return response.data.choices[0].text;
 };

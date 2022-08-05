@@ -1,38 +1,17 @@
 import { ApolloServer } from 'apollo-server-koa';
 import * as Koa from 'koa';
 
-import schema from './graphql/schema';
-// import { validateAndDecodeJWT, JWTPayload } from '../services/auth/jwt';
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import { env } from './env';
+import schema from './graphql/schema';
 
 const server = new ApolloServer({
   schema,
   introspection: true,
-  // mocks: env.API.GRAPHQL_MOCK_ENABLED === 'true' && {
-  //   Date: () => new Date(),
-  // },
-  // formatError: (err) => {
-  //   logger.error(err);
-  //   !!err.extensions.exception?.stacktrace && err.extensions.exception.stacktrace.map((s) => logger.error(s));
-  //   return err;
-  // },
-  mockEntireSchema: true,
-  // context: async (context): Promise<APIContext> => {
-  //   const jwt = context.ctx.request.header.authorization;
-  //   if (!!jwt) {
-  //     try {
-  //       return { user: await validateAndDecodeJWT(jwt) };
-  //     } catch (err) {
-  //       throw new AuthenticationError('Invalid token');
-  //     }
-  //   }
-  //   return {};
-  // },
   plugins: [
     ApolloServerPluginLandingPageGraphQLPlayground(),
     {
-      requestDidStart: async (c) => {
+      requestDidStart: async c => {
         const requestStartedAt = Date.now();
         return {
           async willSendResponse(a) {
