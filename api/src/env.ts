@@ -5,6 +5,7 @@ const OTHER = typedEnv.envGroup({
   NODE_ENV: typedEnv.types.NonEmptyString,
   PORT: typedEnv.types.PortNumber,
   OPENAI_API_KEY: typedEnv.types.NonEmptyString,
+  ML_BASE_URL: typedEnv.types.NonEmptyString,
 });
 
 const envSchema = typedEnv.envSchema({

@@ -1,5 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai';
 import { env } from './env';
+import { getRelevantContexts } from './ml.service';
 
 const configuration = new Configuration({
   apiKey: env.OTHER.OPENAI_API_KEY,
@@ -44,30 +45,28 @@ export const autocompleteText = async ({
   //     {}
   //   );
   // });
+  console.log('hi');
+  const relevant_contexts = await getRelevantContexts(inputText, sources);
+  const sourcesPrompt = relevant_contexts.map(({ context }) => `${context}`).join(`
+  ---
+  `);
+  console.log(sourcesPrompt);
+  // return ' autocomplete';
+  const prompt = `
+  ${sourcesPrompt}
 
-  // const sourcesPrompt = sources.map(
-  //   source => `Source 1:
-  // ${source}
-  // `
-  // ).join(`
+  Below is a study note${title ? ' about ' + title : ''}
 
-  // ========
-
-  // `);
-  return ' autocomplete';
-  // const prompt = `
-  // Below is a study note${title ? ' about ' + title : ''}
-
-  // ${inputText}`;
-  // console.log(prompt);
-  // const response = await openai.createCompletion({
-  //   model: 'text-davinci-002',
-  //   // model: 'text-curie-001',
-  //   prompt,
-  //   temperature: 0,
-  //   max_tokens: 20,
-  // });
-  // if (!response.data?.choices) return '';
-  // if (!response.data?.choices[0].text) throw new Error('no results from gpt3');
-  // return response.data.choices[0].text;
+  ${inputText}`;
+  console.log(prompt);
+  const response = await openai.createCompletion({
+    model: 'text-davinci-002',
+    // model: 'text-curie-001',
+    prompt,
+    temperature: 0,
+    max_tokens: 20,
+  });
+  if (!response.data?.choices) return '';
+  if (!response.data?.choices[0].text) throw new Error('no results from gpt3');
+  return response.data.choices[0].text;
 };

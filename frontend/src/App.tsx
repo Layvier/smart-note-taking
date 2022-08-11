@@ -29,8 +29,8 @@ export const App = () => {
           <ColorModeSwitcher justifySelf="flex-end" />
         </Flex>
         <Stack spacing={16} px={20}>
-          <Flex>
-            <Flex w="60%" mr={5}>
+          <Flex direction="row" justifyContent="space-between">
+            <Flex w="40%" mr={5}>
               <Input
                 size="lg"
                 variant="flushed"
@@ -40,10 +40,12 @@ export const App = () => {
               />
             </Flex>
 
-            <SourceDocuments
-              sourceDocuments={sourceDocuments}
-              onChange={(sourceDocs) => setSourceDocuments(sourceDocs)}
-            />
+            <Flex w="40%" mr={5}>
+              <SourceDocuments
+                sourceDocuments={sourceDocuments}
+                onChange={(sourceDocs) => setSourceDocuments(sourceDocs)}
+              />
+            </Flex>
           </Flex>
           <Editor content={content} setContent={setContent} title={title} sourceDocuments={sourceDocuments} />
         </Stack>
