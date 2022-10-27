@@ -30,8 +30,7 @@ export const autocompleteText = async ({
   inputText: string;
 }): Promise<string> => {
   // const inputWords = inputText.replace(/[.]/g, '').split(/\s/);
-  // console.log(inputWords);
-  // // console.log({ sources });
+
   // const frequencies = sources.map(source => {
   //   const s = source.replace(/[.]/g, '').split(/\s/);
   //   console.log(s);
@@ -45,13 +44,11 @@ export const autocompleteText = async ({
   //     {}
   //   );
   // });
-  console.log('hi');
+
   const relevant_contexts = await getRelevantContexts(inputText, sources);
   const sourcesPrompt = relevant_contexts.map(({ context }) => `${context}`).join(`
   ---
   `);
-  console.log(sourcesPrompt);
-  // return ' autocomplete';
   const prompt = `
   ${sourcesPrompt}
 
@@ -61,7 +58,6 @@ export const autocompleteText = async ({
   console.log(prompt);
   const response = await openai.createCompletion({
     model: 'text-davinci-002',
-    // model: 'text-curie-001',
     prompt,
     temperature: 0,
     max_tokens: 20,

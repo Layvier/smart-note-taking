@@ -20,8 +20,8 @@ export const getRelevantContexts = async (
       body: JSON.stringify({
         input_text: inputText,
         source_documents: sourceDocuments,
-        similarity_treshold: 0.5,
-        max_contexts_per_document: 1,
+        similarity_treshold: 0.45,
+        max_contexts_per_document: 2,
       }),
     });
     const { items } = await response.json();
